@@ -157,12 +157,36 @@ def run_with_schedule(
 ):
     """
     便捷函数：使用定时调度运行任务
-    
+
     Args:
         task: 要执行的任务函数
         schedule_time: 每日执行时间
         run_immediately: 是否立即执行一次
     """
+    scheduler = Scheduler(schedule_time=schedule_time)
+    scheduler.set_daily_task(task, run_immediately=run_immediately)
+    scheduler.run()
+
+
+def run_all_shares_daily_task(
+    schedule_time: str = "17:00",
+    run_immediately: bool = False,
+    mode: str = "update"
+):
+    """
+    便捷函数：运行全 A 股每日数据定时任务
+
+    Args:
+        schedule_time: 每日执行时间（默认 20:00，收盘后）
+        run_immediately: 是否立即执行一次
+        mode: 运行模式（init/update）
+    """
+    from src.services.all_shares_daily_service import AllSharesDailyService
+
+    def task():
+        service = AllSharesDailyService()
+        service.run(mode=mode)
+
     scheduler = Scheduler(schedule_time=schedule_time)
     scheduler.set_daily_task(task, run_immediately=run_immediately)
     scheduler.run()

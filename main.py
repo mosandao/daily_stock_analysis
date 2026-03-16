@@ -210,6 +210,33 @@ def parse_arguments() -> argparse.Namespace:
         help='强制回测（即使已有回测结果也重新计算）'
     )
 
+    # === All A-Shares Daily Data Service ===
+    parser.add_argument(
+        '--all-shares-init',
+        action='store_true',
+        help='初始化全 A 股历史数据（从 2025-07-01 开始）'
+    )
+
+    parser.add_argument(
+        '--all-shares-update',
+        action='store_true',
+        help='更新全 A 股今日数据'
+    )
+
+    parser.add_argument(
+        '--all-shares-limit',
+        type=int,
+        default=None,
+        help='限制处理的股票数量（测试用）'
+    )
+
+    parser.add_argument(
+        '--all-shares-start-date',
+        type=str,
+        default='20250701',
+        help='历史数据开始日期，格式 YYYYMMDD'
+    )
+
     return parser.parse_args()
 
 
@@ -602,6 +629,28 @@ def main() -> int:
                 f"回测完成: processed={stats.get('processed')} saved={stats.get('saved')} "
                 f"completed={stats.get('completed')} insufficient={stats.get('insufficient')} errors={stats.get('errors')}"
             )
+            return 0
+
+        # 模式 0.5: 全 A 股每日数据服务
+        if args.all_shares_init or args.all_shares_update:
+            from src.services.all_shares_daily_service import AllSharesDailyService
+
+            service = AllSharesDailyService()
+
+            if args.all_shares_init:
+                logger.info("模式：初始化全 A 股历史数据")
+                logger.info(f"开始日期：{args.all_shares_start_date}")
+                if args.all_shares_limit:
+                    logger.info(f"限制处理 {args.all_shares_limit} 只股票（测试模式）")
+                service.run(
+                    mode='init',
+                    limit=args.all_shares_limit,
+                    start_date=args.all_shares_start_date
+                )
+            elif args.all_shares_update:
+                logger.info("模式：更新全 A 股今日数据")
+                service.run(mode='update', limit=args.all_shares_limit)
+
             return 0
 
         # 模式1: 仅大盘复盘
