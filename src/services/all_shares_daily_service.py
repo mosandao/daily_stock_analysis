@@ -133,7 +133,7 @@ class AllSharesDailyService:
         retry_delay = 2
 
         # 尝试多个数据源
-        data_sources = ['eastmoney', 'sina']
+        data_sources = ['sina']
 
         for source in data_sources:
             logger.info(f"尝试使用 {source} 数据源获取 A 股列表...")
